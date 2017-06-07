@@ -13,10 +13,27 @@ int main(int argc, char *argv[])
     LampHandle * lh = lamp_init();
 
     QApplication::setQuitOnLastWindowClosed(false);
+
+    QActionGroup *group = new QActionGroup(nullptr);
+    group->setExclusive(true);
+
     QAction* red = new QAction(QObject::tr("Red"), nullptr);
+    red->setCheckable(true);
+
     QAction* green = new QAction(QObject::tr("Green"), nullptr);
+    green->setCheckable(true);
+
     QAction* blue = new QAction(QObject::tr("Blue"), nullptr);
+    blue->setCheckable(true);
+
     QAction* yellow = new QAction(QObject::tr("Yellow"), nullptr);
+    yellow->setCheckable(true);
+
+    group->addAction(red);
+    group->addAction(green);
+    group->addAction(blue);
+    group->addAction(yellow);
+
     QAction* quit = new QAction(QObject::tr("Quit"), nullptr);
 
     QTimer* timer = new QTimer(nullptr);
@@ -34,10 +51,7 @@ int main(int argc, char *argv[])
     a.connect(yellow, &QAction::triggered, &a, [lh]() { lamp_setColor(255, 255, 0, lh); });
 
     QMenu* menu = new QMenu(nullptr);
-    menu->addAction(red);
-    menu->addAction(green);
-    menu->addAction(blue);
-    menu->addAction(yellow);
+    menu->addActions(group->actions());
     menu->addSeparator();
     menu->addAction(quit);
 
@@ -48,4 +62,5 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
+
 
