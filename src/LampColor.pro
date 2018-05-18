@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,12 +27,7 @@ QMAKE_INFO_PLIST = osx/Info.plist
 SOURCES += \
         main.cpp
 
-INCLUDEPATH += /usr/local/include/hidapi
-
-LIBS += /usr/local/lib/libhidapi.dylib
-
-HEADERS += \
-    lamp.h
+HEADERS +=
 
 RESOURCES += \
     icons.qrc

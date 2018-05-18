@@ -1,18 +1,22 @@
 #include <QApplication>
+#include <QUdpSocket>
 #include <QMenu>
 #include <QAction>
 #include <QSystemTrayIcon>
 #include <QTimer>
-#include "lamp.h"
 
+const char * clearColor  = new char[5] {'B', 'L', (char)0x00, (char)0x00, (char)0x00};
+const char * greenColor  = new char[5] {'B', 'L', (char)0x00, (char)0xFF, (char)0x00};
+const char * redColor    = new char[5] {'B', 'L', (char)0xFF, (char)0x00, (char)0x00};
+const char * blueColor   = new char[5] {'B', 'L', (char)0x00, (char)0x00, (char)0xFF};
+const char * yellowColor = new char[5] {'B', 'L', (char)0xFF, (char)0xFF, (char)0x00};
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    LampHandle * lh = lamp_init();
-
     QApplication::setQuitOnLastWindowClosed(false);
+
+    QUdpSocket socket;
 
     QActionGroup *group = new QActionGroup(nullptr);
     group->setExclusive(true);
@@ -39,16 +43,15 @@ int main(int argc, char *argv[])
     QTimer* timer = new QTimer(nullptr);
 
     // BusyLight will timeout after 30 seconds
-    timer->setInterval(15000);
+    timer->setInterval(5000);
     timer->start();
 
-    a.connect(timer, &QTimer::timeout, [lh](){ lamp_setColor(lh->cRed, lh->cGreen, lh->cBlue, lh); });
-
+    a.connect(timer, &QTimer::timeout, [&](){ socket.writeDatagram(clearColor, 5, QHostAddress::Broadcast, 443); });
     a.connect(quit, &QAction::triggered, &a, &QCoreApplication::quit);
-    a.connect(red, &QAction::triggered, &a, [lh]() { lamp_setColor(255, 0, 0, lh); });
-    a.connect(green, &QAction::triggered, &a, [lh]() { lamp_setColor(0, 255, 0, lh); });
-    a.connect(blue, &QAction::triggered, &a, [lh]() { lamp_setColor(0, 0, 255, lh); });
-    a.connect(yellow, &QAction::triggered, &a, [lh]() { lamp_setColor(255, 255, 0, lh); });
+    a.connect(red, &QAction::triggered, &a, [&](){ socket.writeDatagram(redColor, 5, QHostAddress::Broadcast, 443); });
+    a.connect(green, &QAction::triggered, &a, [&]() { socket.writeDatagram(greenColor, 5, QHostAddress::Broadcast, 443); });
+    a.connect(blue, &QAction::triggered, &a, [&]() { socket.writeDatagram(blueColor, 5, QHostAddress::Broadcast, 443); });
+    a.connect(yellow, &QAction::triggered, &a, [&]() { socket.writeDatagram(yellowColor, 5, QHostAddress::Broadcast, 443); });
 
     QMenu* menu = new QMenu(nullptr);
     menu->addActions(group->actions());
