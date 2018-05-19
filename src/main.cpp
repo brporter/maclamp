@@ -5,11 +5,22 @@
 #include <QSystemTrayIcon>
 #include <QTimer>
 
-const char * clearColor  = new char[5] {'B', 'L', (char)0x00, (char)0x00, (char)0x00};
-const char * greenColor  = new char[5] {'B', 'L', (char)0x00, (char)0xFF, (char)0x00};
-const char * redColor    = new char[5] {'B', 'L', (char)0xFF, (char)0x00, (char)0x00};
-const char * blueColor   = new char[5] {'B', 'L', (char)0x00, (char)0x00, (char)0xFF};
-const char * yellowColor = new char[5] {'B', 'L', (char)0xFF, (char)0xFF, (char)0x00};
+static const char colors[5][5]  =
+    {
+        {'B', 'L', (char)0x00, (char)0x00, (char)0x00},
+        {'B', 'L', (char)0x00, (char)0xFF, (char)0x00},
+        {'B', 'L', (char)0xFF, (char)0x00, (char)0x00},
+        {'B', 'L', (char)0x00, (char)0x00, (char)0xFF},
+        {'B', 'L', (char)0xFF, (char)0xFF, (char)0x00}
+    };
+
+static enum COLOR {
+    Color_Clear = 0,
+    Color_Green = 1,
+    Color_Red   = 2,
+    Color_Blue  = 3,
+    Color_Yellow= 4
+} currentColor = Color_Clear;
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +31,10 @@ int main(int argc, char *argv[])
 
     QActionGroup *group = new QActionGroup(nullptr);
     group->setExclusive(true);
+
+    QAction* clear = new QAction(QObject::tr("Clear"), nullptr);
+    clear->setCheckable(true);
+    clear->setChecked(true);
 
     QAction* red = new QAction(QObject::tr("Red"), nullptr);
     red->setCheckable(true);
@@ -33,6 +48,7 @@ int main(int argc, char *argv[])
     QAction* yellow = new QAction(QObject::tr("Yellow"), nullptr);
     yellow->setCheckable(true);
 
+    group->addAction(clear);
     group->addAction(red);
     group->addAction(green);
     group->addAction(blue);
@@ -46,12 +62,13 @@ int main(int argc, char *argv[])
     timer->setInterval(5000);
     timer->start();
 
-    a.connect(timer, &QTimer::timeout, [&](){ socket.writeDatagram(clearColor, 5, QHostAddress::Broadcast, 443); });
+    a.connect(timer, &QTimer::timeout, [&](){ socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
     a.connect(quit, &QAction::triggered, &a, &QCoreApplication::quit);
-    a.connect(red, &QAction::triggered, &a, [&](){ socket.writeDatagram(redColor, 5, QHostAddress::Broadcast, 443); });
-    a.connect(green, &QAction::triggered, &a, [&]() { socket.writeDatagram(greenColor, 5, QHostAddress::Broadcast, 443); });
-    a.connect(blue, &QAction::triggered, &a, [&]() { socket.writeDatagram(blueColor, 5, QHostAddress::Broadcast, 443); });
-    a.connect(yellow, &QAction::triggered, &a, [&]() { socket.writeDatagram(yellowColor, 5, QHostAddress::Broadcast, 443); });
+    a.connect(clear, &QAction::triggered, &a, [&]() { currentColor = Color_Clear; socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
+    a.connect(red, &QAction::triggered, &a, [&](){ currentColor = Color_Red; socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
+    a.connect(green, &QAction::triggered, &a, [&]() { currentColor = Color_Green; socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
+    a.connect(blue, &QAction::triggered, &a, [&]() { currentColor = Color_Blue; socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
+    a.connect(yellow, &QAction::triggered, &a, [&]() { currentColor = Color_Yellow; socket.writeDatagram(colors[currentColor], 5, QHostAddress::Broadcast, 443); });
 
     QMenu* menu = new QMenu(nullptr);
     menu->addActions(group->actions());
